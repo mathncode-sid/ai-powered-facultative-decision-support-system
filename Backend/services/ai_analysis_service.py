@@ -32,7 +32,7 @@ class AIAnalysisService:
         # the newest OpenAI model is "gpt-5" which was released August 7, 2025.
         # do not change this unless explicitly requested by the user
         self.llm = ChatOpenAI(
-            model="gpt-5",
+            model="gpt-5-mini",
             api_key=os.getenv("OPENAI_API_KEY")
         )
         
