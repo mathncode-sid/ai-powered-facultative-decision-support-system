@@ -1,14 +1,4 @@
-# Ignore everything in Frontend by default
-/Frontend/*
-
-# Allow essential project files
-!/Frontend/package.json
-!/Frontend/package-lock.json
-!/Frontend/yarn.lock
-!/Frontend/tsconfig.json
-!/Frontend/next.config.js
-!/Frontend/public/
-!/Frontend/src/
+# Ignore everything in Frontend by defaultes
 
 # Ignore build and dependency folders
 /Frontend/node_modules/
