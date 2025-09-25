@@ -156,16 +156,16 @@ poetry show --tree
 ### Celery Commands
 ```bash
 # Start worker
-poetry run celery -A main_celery worker --loglevel=info
+poetry run celery -A celery_app worker --loglevel=info
 
 # Start worker with specific concurrency
-poetry run celery -A main_celery worker --loglevel=info --concurrency=4
+poetry run celery -A celery_app worker --loglevel=info --concurrency=4
 
 # Monitor tasks
-poetry run celery -A main_celery flower
+poetry run celery -A celery_app flower
 
 # Purge all tasks
-poetry run celery -A main_celery purge
+poetry run celery -A celery_app purge
 ```
 
 ### FastAPI Commands

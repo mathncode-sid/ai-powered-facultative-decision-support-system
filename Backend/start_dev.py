@@ -62,7 +62,7 @@ def start_celery_worker():
     print("🔄 Starting Celery worker...")
     try:
         return subprocess.Popen([
-            "poetry", "run", "celery", "-A", "main_celery", "worker", 
+            "poetry", "run", "celery", "-A", "celery_app", "worker", 
             "--loglevel=info", "--concurrency=2"
         ])
     except Exception as e:

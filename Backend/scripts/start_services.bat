@@ -31,7 +31,7 @@ timeout /t 3 /nobreak >nul
 
 REM Start Celery worker
 echo Starting Celery worker...
-start "Celery Worker" poetry run celery -A main_celery worker --loglevel=info --concurrency=2
+start "Celery Worker" poetry run celery -A celery_app worker --loglevel=info --concurrency=2
 
 REM Start FastAPI server
 echo Starting FastAPI server...

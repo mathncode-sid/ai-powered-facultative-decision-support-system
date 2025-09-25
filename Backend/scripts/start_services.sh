@@ -33,7 +33,7 @@ fi
 
 # Start Celery worker in background
 echo "🔄 Starting Celery worker..."
-poetry run celery -A main_celery worker --loglevel=info --concurrency=2 &
+poetry run celery -A celery_app worker --loglevel=info --concurrency=2 &
 CELERY_PID=$!
 
 # Start FastAPI server

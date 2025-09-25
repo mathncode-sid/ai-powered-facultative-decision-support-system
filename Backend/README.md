@@ -74,7 +74,7 @@ cd Backend
 redis-server
 
 # Terminal 2: Start Celery Worker
-poetry run celery -A main_celery worker --loglevel=info --concurrency=2
+poetry run celery -A celery_app worker --loglevel=info --concurrency=2
 
 # Terminal 3: Start FastAPI Server
 poetry run uvicorn main_celery:app --host 0.0.0.0 --port 8000 --reload
@@ -182,13 +182,13 @@ poetry run celery -A main_celery worker --loglevel=info
 ### Celery Commands
 ```bash
 # Start worker
-poetry run celery -A main_celery worker --loglevel=info
+poetry run celery -A celery_app worker --loglevel=info
 
 # Monitor tasks
-poetry run celery -A main_celery flower
+poetry run celery -A celery_app flower
 
 # Purge all tasks
-poetry run celery -A main_celery purge
+poetry run celery -A celery_app purge
 ```
 
 ### FastAPI Commands
@@ -248,6 +248,11 @@ poetry run mypy .
 4. **Import errors**
    - Ensure you're in Poetry environment: `poetry shell`
    - Reinstall dependencies: `poetry install --sync`
+
+5. **Celery worker issues**
+   - Check Redis connection: `redis-cli ping`
+   - Use correct Celery app: `poetry run celery -A celery_app worker --loglevel=info`
+   - Check Celery configuration in `celery_app.py`
 
 ## 📚 Documentation
 
