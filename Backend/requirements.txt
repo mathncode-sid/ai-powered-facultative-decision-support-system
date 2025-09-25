@@ -1,0 +1,29 @@
+# AI-Powered Facultative Reinsurance Decision Support System
+# Production Dependencies
+
+# Core Framework
+fastapi>=0.117.1
+uvicorn[standard]>=0.37.0
+pydantic>=2.11.9
+
+# Background Tasks
+celery[redis]>=5.5.3
+redis>=5.2.1
+
+# File Processing
+extract-msg>=0.55.0
+aiofiles>=24.1.0
+python-magic>=0.4.27
+python-multipart>=0.0.20
+
+# AI and Document Processing
+openai>=1.109.1
+langchain>=0.3.27
+langchain-openai>=0.3.33
+llama-parse>=0.6.69
+
+# File Storage
+cloudinary>=1.44.1
+
+# HTTP Client
+requests>=2.32.5
