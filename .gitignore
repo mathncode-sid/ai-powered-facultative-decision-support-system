@@ -1,0 +1,23 @@
+# Ignore everything in Frontend by defaultes
+
+# Ignore build and dependency folders
+/Frontend/node_modules/
+/Frontend/.next/
+/Frontend/out/
+/Frontend/build/
+
+# Ignore environment files
+/Frontend/.env
+/Frontend/.env*.local
+
+# Ignore misc
+/Frontend/.DS_Store
+/Frontend/*.pem
+/Frontend/npm-debug.log*
+/Frontend/yarn-debug.log*
+/Frontend/yarn-error.log*
+/Frontend/next-env.d.ts
+/Frontend/*.tsbuildinfo
+
+# Ignore vercel
+/Frontend/.vercel
