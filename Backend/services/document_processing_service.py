@@ -19,9 +19,10 @@ class DocumentProcessingService:
             logger.warning("LLAMA_CLOUD_API_KEY not found, document parsing will be limited")
             self.parser = None
         else:
+            from llama_parse import ResultType
             self.parser = LlamaParse(
                 api_key=self.api_key,
-                result_type="markdown",  # Get structured markdown output
+                result_type=ResultType.MD,  # Get structured markdown output
                 language="en",
                 parsing_instruction="""
                 This document contains reinsurance submission information. 
@@ -84,6 +85,19 @@ class DocumentProcessingService:
             
             # Download the document temporarily
             response = requests.get(cloudinary_url, timeout=30)
+            
+            # Handle 401 unauthorized errors specifically
+            if response.status_code == 401:
+                logger.error(f"Access denied to document {cloudinary_url}. File may be private.")
+                return {
+                    "url": cloudinary_url,
+                    "status": "access_denied",
+                    "error": "401 Unauthorized - File may be private or access denied",
+                    "extracted_text": f"Document at {cloudinary_url} requires authentication",
+                    "tables": [],
+                    "metadata": {"error_type": "access_denied"}
+                }
+            
             response.raise_for_status()
             
             # Save to temporary file

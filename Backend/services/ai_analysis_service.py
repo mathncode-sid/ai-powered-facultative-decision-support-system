@@ -1,6 +1,6 @@
 """
 AI Analysis Service for Facultative Reinsurance Decision Support
-Uses GPT-5 with LangChain and Pydantic output parsing
+Uses GPT-5-mini with LangChain and Pydantic output parsing
 """
 import os
 import json
@@ -28,12 +28,12 @@ logger = logging.getLogger(__name__)
 
 class AIAnalysisService:
     def __init__(self):
-        """Initialize the AI analysis service with GPT-5"""
-        # the newest OpenAI model is "gpt-5" which was released August 7, 2025.
-        # do not change this unless explicitly requested by the user
+        """Initialize the AI analysis service with GPT-5-mini"""
+        # Using GPT-5-mini for efficient and cost-effective analysis
+        if not os.getenv("OPENAI_API_KEY"):
+            raise ValueError("OPENAI_API_KEY environment variable is required")
         self.llm = ChatOpenAI(
-            model="gpt-5-mini",
-            api_key=os.getenv("OPENAI_API_KEY")
+            model="gpt-5-mini"
         )
         
         # Set up output parser
@@ -130,7 +130,7 @@ DOCUMENT PROCESSING SUMMARY:
         return input_text
     
     def _generate_ai_analysis(self, input_text: str) -> AIAnalysisResult:
-        """Generate AI analysis using GPT-5"""
+        """Generate AI analysis using GPT-5-mini"""
         
         system_prompt = """
 You are an expert facultative reinsurance underwriter with 20+ years of experience. 
@@ -185,6 +185,8 @@ Based on the information provided, generate a complete analysis following the fa
             
             # Parse the response
             response_content = response.content if hasattr(response, 'content') else str(response)
+            if not isinstance(response_content, str):
+                response_content = str(response_content)
             analysis_result = self.parser.parse(response_content)
             
             logger.info("AI analysis completed successfully")
@@ -208,11 +210,38 @@ Based on the information provided, generate a complete analysis following the fa
             broker="To be determined from documents",
             perils_covered="Fire, Material Damage (inferred)",
             geographical_limit="To be determined",
+            situation_of_risk="To be determined",
+            occupation_of_insured="To be determined",
+            main_activities="To be determined",
+            total_sum_insured=None,
+            tsi_breakdown=None,
+            excess_deductible=None,
+            retention_of_cedant=None,
+            possible_maximum_loss_pml=None,
+            cat_exposure="To be assessed",
+            period_of_insurance="To be determined",
+            reinsurance_deductions=None,
+            claims_experience_last_3_years=None,
+            loss_ratio_percentage=None,
+            share_offered=None,
+            inward_acceptances="None",
+            risk_surveyors_report="Pending",
+            premium_rates=None,
+            premium_original_currency=None,
+            premium_kes=None,
+            original_currency=None,
+            liability_original_currency=None,
+            liability_kes=None,
             technical_assessment="Analysis pending - requires manual review of attachments",
+            market_considerations="Standard market assessment required",
+            portfolio_impact="To be assessed based on existing portfolio",
+            proposed_terms_conditions="Standard terms",
+            positive_assessment="To be determined",
             climate_change_risk_factors=ClimateRiskLevel.MODERATE,
             esg_risk_assessment=RiskLevel.MEDIUM,
             proposed_acceptance_share=20.0,  # Conservative default
-            final_recommendation="Requires detailed manual analysis of attached documents"
+            final_recommendation="Requires detailed manual analysis of attached documents",
+            recommended_share_percentage=20.0
         )
         
         return AIAnalysisResult(
@@ -262,12 +291,38 @@ Based on the information provided, generate a complete analysis following the fa
             broker="Mahindra Insurance Brokers" if "mahindra" in text_lower else "To be determined",
             perils_covered=perils,
             geographical_limit="TBA",
+            situation_of_risk="To be determined",
+            occupation_of_insured="To be determined",
+            main_activities="To be determined",
+            total_sum_insured=None,
+            tsi_breakdown=None,
+            excess_deductible=None,
+            retention_of_cedant=None,
             possible_maximum_loss_pml=10.0,  # Conservative estimate
+            cat_exposure="To be assessed",
+            period_of_insurance="To be determined",
+            reinsurance_deductions=None,
+            claims_experience_last_3_years=None,
+            loss_ratio_percentage=None,
+            share_offered=None,
+            inward_acceptances="None",
+            risk_surveyors_report="Pending",
             premium_rates=0.25,  # Standard rate estimate
-            proposed_acceptance_share=25.0,
+            premium_original_currency=None,
+            premium_kes=None,
+            original_currency=None,
+            liability_original_currency=None,
+            liability_kes=None,
             technical_assessment="Standard fire risk profile identified. Detailed review of engineering reports required.",
+            market_considerations="Competitive market for fire risks",
+            portfolio_impact="Standard diversification required",
+            proposed_terms_conditions="Standard terms",
+            positive_assessment="To be determined",
             climate_change_risk_factors=ClimateRiskLevel.MODERATE,
-            esg_risk_assessment=RiskLevel.MEDIUM
+            esg_risk_assessment=RiskLevel.MEDIUM,
+            proposed_acceptance_share=25.0,
+            final_recommendation="Standard fire risk - recommend acceptance with standard terms",
+            recommended_share_percentage=25.0
         )
         
         return AIAnalysisResult(

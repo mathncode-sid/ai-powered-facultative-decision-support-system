@@ -95,7 +95,7 @@ def process_reinsurance_msg(self, file_path: str) -> Dict[str, Any]:
                 attachments=[]
             )
         
-        # AI Analysis using GPT-5 with document processing
+        # AI Analysis using GPT-5-mini with document processing
         self.update_state(state='PROGRESS', meta={'progress': 70, 'status': 'Performing AI analysis with document processing'})
         try:
             # Get attachment URLs for AI analysis

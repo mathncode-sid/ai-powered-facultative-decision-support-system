@@ -35,7 +35,7 @@ class CloudinaryService:
             # Create a file-like object from bytes
             file_stream = BytesIO(file_data)
             
-            # Upload to Cloudinary
+            # Upload to Cloudinary with public access
             result = cloudinary.uploader.upload(
                 file_stream,
                 folder=folder,
@@ -43,7 +43,8 @@ class CloudinaryService:
                 resource_type="auto",  # Auto-detect file type
                 overwrite=True,
                 use_filename=True,
-                unique_filename=True
+                unique_filename=True,
+                access_mode="public"  # Ensure public access for document processing
             )
             
             logger.info(f"Successfully uploaded {filename} to Cloudinary")
