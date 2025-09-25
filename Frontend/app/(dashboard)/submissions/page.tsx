@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import FileUploadZone from '@/components/submissions/fileuploadzone';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useRouter } from 'next/navigation';
 import { 
   Plus, 
   Upload, 
@@ -23,6 +24,7 @@ import { toast } from '@/hooks/use-toast';
 
 const SubmissionsPage: React.FC = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const {
     filteredAndSortedSubmissions,
     selectedSubmissions,
@@ -45,6 +47,20 @@ const SubmissionsPage: React.FC = () => {
   }, []);
 
   const [openUpload, setOpenUpload] = React.useState(false);
+
+  const handleAnalysisComplete = (result: any) => {
+    // Navigate to analysis results page
+    const taskId = result.task_id || 'unknown';
+    router.push(`/analysis-results?taskId=${taskId}`);
+  };
+
+  const handleAnalysisError = (error: string) => {
+    toast({
+      title: 'Analysis Failed',
+      description: error,
+      variant: 'destructive',
+    });
+  };
 
   const handleSubmissionClick = (submission: any) => {
     // Navigate to submission detail page
@@ -151,6 +167,9 @@ const SubmissionsPage: React.FC = () => {
                   console.log("Uploaded files:", files);
                   setOpenUpload(false); // ✅ auto-close after upload (optional)
                 }}
+                onAnalysisComplete={handleAnalysisComplete}
+                onAnalysisError={handleAnalysisError}
+                enableAnalysis={true}
               />
             </DialogContent>
           </Dialog>

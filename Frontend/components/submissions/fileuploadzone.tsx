@@ -14,19 +14,26 @@ import {
   Plus,
   AlertCircle,
   CheckCircle2,
-  Mail
+  Mail,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { apiService } from '@/lib/api';
 
 interface FileUploadZoneProps {
-  onFilesUploaded: (files: FileList) => void;
+  onFilesUploaded?: (files: FileList) => void;
+  onAnalysisComplete?: (result: any) => void;
+  onAnalysisError?: (error: string) => void;
   maxFiles?: number;
   maxFileSize?: number; // in MB
   acceptedTypes?: string[];
+  enableAnalysis?: boolean;
 }
 
 const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   onFilesUploaded,
+  onAnalysisComplete,
+  onAnalysisError,
   maxFiles = 10,
   maxFileSize = 50,
   acceptedTypes = [
@@ -41,10 +48,13 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     'text/plain',
     'application/vnd.ms-outlook', // MSG files
     'application/octet-stream' // Fallback for MSG files that might not have proper MIME type
-  ]
+  ],
+  enableAnalysis = true
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState<{ status: string; progress?: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getFileIcon = (type: string, fileName?: string) => {
@@ -144,6 +154,39 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     }
   };
 
+  const analyzeFile = async (file: File) => {
+    if (!enableAnalysis || !onAnalysisComplete) return;
+
+    setIsAnalyzing(true);
+    setAnalysisProgress({ status: 'Starting analysis...', progress: 0 });
+
+    try {
+      const result = await apiService.analyzeFile(file, (progress) => {
+        setAnalysisProgress(progress);
+      });
+
+      setAnalysisProgress({ status: 'Analysis complete!', progress: 100 });
+      onAnalysisComplete(result);
+      
+      toast({
+        title: 'Analysis Complete',
+        description: 'Your file has been successfully analyzed.',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+      setAnalysisProgress(null);
+      onAnalysisError?.(errorMessage);
+      
+      toast({
+        title: 'Analysis Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleFileSelection = (files: FileList) => {
     const { validFiles, errors } = validateFiles(files);
     
@@ -152,7 +195,12 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     if (validFiles.length > 0) {
       const fileList = new DataTransfer();
       validFiles.forEach(file => fileList.items.add(file));
-      onFilesUploaded(fileList.files);
+      onFilesUploaded?.(fileList.files);
+
+      // If analysis is enabled and we have a single .msg file, start analysis
+      if (enableAnalysis && validFiles.length === 1 && validFiles[0].name.toLowerCase().endsWith('.msg')) {
+        analyzeFile(validFiles[0]);
+      }
     }
 
     if (errors.length > 0) {
@@ -286,6 +334,32 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
                   • {error}
                 </p>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Analysis Progress */}
+      {isAnalyzing && analysisProgress && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />
+                <h4 className="text-sm font-medium text-blue-800">AI Analysis in Progress</h4>
+              </div>
+              <Badge variant="outline" className="text-blue-600 border-blue-300">
+                {analysisProgress.progress || 0}%
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-blue-700">{analysisProgress.status}</p>
+              <div className="w-full bg-blue-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${analysisProgress.progress || 0}%` }}
+                ></div>
+              </div>
             </div>
           </CardContent>
         </Card>
