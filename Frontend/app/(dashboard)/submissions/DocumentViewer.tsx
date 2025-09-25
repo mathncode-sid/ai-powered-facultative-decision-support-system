@@ -83,7 +83,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
   const handleDownload = () => {
     // Create a temporary link to download the document
-    const link = document.createElement('a');
+    // Use globalThis.document to explicitly reference the DOM document object
+    const link = globalThis.document.createElement('a');
     link.href = document.url;
     link.download = document.name;
     link.click();
