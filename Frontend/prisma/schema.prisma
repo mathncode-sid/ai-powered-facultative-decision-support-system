@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String        @id @default(uuid())
+  email       String        @unique
+  name        String
+  role        UserRole
+  department  String?
+  avatar      String?
+  lastLogin   DateTime?
+  submissions Submission[]  @relation("AssignedSubmissions")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Cedant {
+  id            String       @id @default(uuid())
+  name          String
+  country       String
+  rating        String?
+  relationship  Relationship
+  contactPerson String
+  email         String
+  submissions   Submission[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Broker {
+  id            String       @id @default(uuid())
+  name          String
+  contactPerson String
+  email         String
+  market        String
+  submissions   Submission[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Insured {
+  id              String       @id @default(uuid())
+  name            String
+  business        String
+  country         String
+  industry        String
+  yearEstablished Int?
+  rating          String?
+  submissions     Submission[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Submission {
+  id                String           @id @default(uuid())
+  reference         String           @unique
+  cedantId          String
+  cedant            Cedant           @relation(fields: [cedantId], references: [id])
+  brokerId          String?
+  broker            Broker?          @relation(fields: [brokerId], references: [id])
+  insuredId         String
+  insured           Insured          @relation(fields: [insuredId], references: [id])
+  status            SubmissionStatus @default(pending_review)
+  priority          Priority         @default(medium)
+  submissionDate    DateTime
+  dueDate           DateTime?
+  assignedToId      String?
+  assignedTo        User?            @relation("AssignedSubmissions", fields: [assignedToId], references: [id])
+  totalSumInsured   Decimal          @db.Decimal(18, 2)
+  currency          String           @default("USD")
+  description       String?
+  riskDetails       RiskDetails?
+  financialDetails  FinancialDetails?
+  workingSheet      WorkingSheet?
+  aiAnalysis        AIAnalysis?
+  documents         Document[]
+  decisionHistory   DecisionEvent[]
+  tags              SubmissionTag[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model RiskDetails {
+  id             String   @id @default(uuid())
+  submissionId   String   @unique
+  submission     Submission @relation(fields: [submissionId], references: [id])
+  classOfBusiness String
+  perils          String[]
+  geography       String
+  sumInsured      Decimal  @db.Decimal(18, 2)
+  currency        String
+  policyFrom      DateTime
+  policyTo        DateTime
+  deductible      Decimal? @db.Decimal(18, 2)
+  attachmentPoint Decimal? @db.Decimal(18, 2)
+  limit           Decimal? @db.Decimal(18, 2)
+  occupancy       String?
+  construction    String?
+  protection      String?
+  exposure        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FinancialDetails {
+  id              String    @id @default(uuid())
+  submissionId    String    @unique
+  submission      Submission @relation(fields: [submissionId], references: [id])
+  grossPremium    Decimal   @db.Decimal(18, 2)
+  commission      Decimal   @db.Decimal(5, 2)
+  brokerage       Decimal   @db.Decimal(5, 2)
+  requestedShare  Decimal   @db.Decimal(5, 2)
+  minimumShare    Decimal?  @db.Decimal(5, 2)
+  maximumShare    Decimal?  @db.Decimal(5, 2)
+  currency        String
+  exchangeRate    Decimal?  @db.Decimal(12, 6)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model WorkingSheet {
+  id            String    @id @default(uuid())
+  submissionId  String    @unique
+  submission    Submission @relation(fields: [submissionId], references: [id])
+  version       Int       @default(1)
+  lastModified  DateTime  @default(now())
+  modifiedById  String
+  modifiedBy    User      @relation(fields: [modifiedById], references: [id])
+  basicInfo     Json
+  riskInfo      Json
+  lossHistory   Json
+  exposureAnalysis Json
+  pricing       Json
+  recommendations Json
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model AIAnalysis {
+  id               String      @id @default(uuid())
+  submissionId     String      @unique
+  submission       Submission  @relation(fields: [submissionId], references: [id])
+  timestamp        DateTime    @default(now())
+  version          String
+  dataExtraction   Json
+  riskAssessment   Json
+  pricingRecommendation Json
+  portfolioImpact  Json
+  explainability   Json
+  createdAt        DateTime    @default(now())
+}
+
+model Document {
+  id           String       @id @default(uuid())
+  submissionId String
+  submission   Submission   @relation(fields: [submissionId], references: [id])
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  category     DocumentCategory
+  status       DocumentStatus @default(processing)
+  extractedData Json?
+  uploadedById String?
+  uploadedBy   User?          @relation(fields: [uploadedById], references: [id])
+  uploadDate   DateTime       @default(now())
+  annotations  Json?
+  version      Int            @default(1)
+  checksum     String?
+}
+
+model DecisionEvent {
+  id            String           @id @default(uuid())
+  submissionId  String
+  submission    Submission       @relation(fields: [submissionId], references: [id])
+  decisionType  DecisionType
+  description   String
+  decidedById   String
+  decidedBy     User             @relation(fields: [decidedById], references: [id])
+  decidedAt     DateTime         @default(now())
+  statusAfter   SubmissionStatus
+  shareOffered  Decimal?         @db.Decimal(5, 2)
+  notes         String?
+}
+
+model SubmissionTag {
+  id            String       @id @default(uuid())
+  submissionId  String
+  submission    Submission   @relation(fields: [submissionId], references: [id])
+  value         String
+  createdAt     DateTime     @default(now())
+}
+
+enum UserRole {
+  facultative_underwriter
+  portfolio_manager
+  senior_manager
+  cedant
+  broker
+  regulator
+  admin
+}
+
+enum Relationship {
+  treaty_partner
+  facultative_only
+  new_client
+}
+
+enum SubmissionStatus {
+  pending_review
+  under_analysis
+  pricing_review
+  portfolio_check
+  awaiting_approval
+  approved
+  declined
+  bound
+  expired
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum DocumentCategory {
+  submission_slip
+  risk_report
+  loss_history
+  survey_report
+  financial_statements
+  photos
+  correspondence
+  other
+}
+
+enum DocumentStatus {
+  processing
+  processed
+  failed
+}
+
+enum DecisionType {
+  initial_review
+  risk_assessment
+  pricing
+  portfolio_review
+  approval
+  rejection
+  binding
+}
+
+
+
